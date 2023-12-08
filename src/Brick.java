@@ -1,17 +1,15 @@
 import java.awt.*;
 public class Brick {
-    public int ypos;
-    public int xpos;
-    public int width;
-    public int height;
-    public Rectangle rectangle;
-    boolean isAlive;
-    public Brick(int pxpos, int pypos){
-        xpos = pxpos;
-        ypos = pypos;
-        width = 120;
-        height = 60;
+    public int ypos = 0;
+    public int xpos = 0;
+    public static int width = 67;
+    public static int height = 50;
+    boolean isAlive = true;
+    Rectangle rectangle = new Rectangle(xpos,ypos,width,height);
+    public Brick(){
+
+    }
+    public void refreshRectangle(){
         rectangle = new Rectangle(xpos,ypos,width,height);
-        isAlive = true;
     }
 }
