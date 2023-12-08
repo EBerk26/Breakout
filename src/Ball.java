@@ -4,7 +4,7 @@ public class Ball {
     public int xpos;
     public int dx;
     public int dy;
-    public int size;
+    public static int size =30;
     public Rectangle rectangle;
     boolean isMoving = true;
     private void refreshRectangle(){
@@ -14,8 +14,7 @@ public class Ball {
         xpos = pxpos;
         ypos = pypos;
         dx = 1;
-        dy =1;
-        size = 30;
+        dy =-1;
         refreshRectangle();    }
     public void move(){
         if(isMoving) {
