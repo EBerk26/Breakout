@@ -6,7 +6,7 @@ public class Paddle {
     static int width = 100;
     static int height = 10;
     public Rectangle rectangle;
-    private void refreshRectangle(){
+     void refreshRectangle(){
         rectangle = new Rectangle(xpos,ypos,width,height);
     }
     public Paddle(int pxpos, int pypos){

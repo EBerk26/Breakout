@@ -5,6 +5,10 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import java.awt.event.*;
 public class Main implements Runnable,KeyListener {
+    public static int RandInt(int LowerBound, int UpperBound){
+        return(int)(Math.random()*(UpperBound-LowerBound+1)+LowerBound);
+    }
+    boolean bricksIntersected = false;
     Font font = new Font("Verdana", Font.BOLD, 14);
     public void keyPressed(KeyEvent e){
         if(e.getKeyCode()== KeyEvent.VK_RIGHT){
@@ -27,11 +31,15 @@ public class Main implements Runnable,KeyListener {
     public void keyTyped(KeyEvent e){
 
     }
-
+    public Image Shovel;
+    public Image LawnMower;
+    public Image Sky;
+    public Image Flowers;
+    public Image PaddleColor;
     int lives = 10;
     int level = 1;
     long StartTime =0;
-    public int Score = 6900;
+    public int Score = 0;
     boolean updateScore = true;
     long StartTime2;
     Brick[] bricks = new Brick[70];
@@ -46,13 +54,27 @@ public class Main implements Runnable,KeyListener {
     public BufferStrategy BufferStrategy;
     public Paddle paddle;
     public Ball ball;
+    Ball bonusBall = new Ball(0,0);
     boolean isCollidingwithpaddle = false;
     public Image skullEmoji;
+    public boolean rowCleared(int prow){
+        for(int x = (prow-1)*14;x<=(prow-1)*14+13;x++){
+            if (bricks[x].isAlive){
+                return false;
+            }
+        }
+        return true;
+    }
     public static void main(String[] args) {
         Main ex = new Main();
         new Thread(ex).start();
     }
     public Main(){
+        Sky = Toolkit.getDefaultToolkit().getImage("Sky.jpg");
+        LawnMower = Toolkit.getDefaultToolkit().getImage("Lawn Mower.png");
+        Shovel = Toolkit.getDefaultToolkit().getImage("Shovel.png");
+        Flowers = Toolkit.getDefaultToolkit().getImage("Flowers.jpeg");
+        PaddleColor = Toolkit.getDefaultToolkit().getImage("Dark Green.png");
         StartTime2 = System.currentTimeMillis();
         setUpGraphics();
         paddle = new Paddle(WIDTH/2-Paddle.width/2,600);
@@ -68,15 +90,24 @@ public class Main implements Runnable,KeyListener {
                 bricknumber++;
             }
         }
-
+        bricks[RandInt(0,70)].hiddenBall = true;
+        //bricks[65].hiddenBall = true; //this code makes the hidden ball be in the first block
     }
     public void run(){
         FirstRender();
+        bonusBall.isAlive = false;
+        bonusBall.dy = 0;
         while(true) {
             if(System.currentTimeMillis()>=StartTime2+1000) {
                 while (true) {
                     moveThings();
                     render();
+                    boolean killBall = rowCleared(bonusBall.row);
+                    if(killBall){
+                        bonusBall.isAlive = false;
+                        bonusBall.isMoving = false;
+                        bonusBall.xpos = 10000;
+                    }
                     pause(3);
                     if (System.currentTimeMillis() > StartTime + 2000 && !ball.isMoving) {
                         if (Math.random() >= 0.5) {
@@ -92,18 +123,29 @@ public class Main implements Runnable,KeyListener {
                         paddle.xpos = WIDTH/2-Paddle.width/2;
                         ball.xpos = WIDTH / 2 - Ball.size / 2;
                         ball.ypos = 600 - Ball.size;
+                        ball.refreshRectangle();
                         StartTime = System.currentTimeMillis();
-                        ball.dy = level; //this was a really weird interaction - it should be -level as the ball is going up buy for some reason this is backwards.
+                        ball.dy = -level; //this was a really weird interaction - it should be -level as the ball is going up buy for some reason this is backwards.
                         ball.dx = level;
                         for (int b = 0; b <= 69; b++) {
                             bricks[b].isAlive = true;
+                            bricks[b].hiddenBall = false;
                         }
+                        bonusBall.xpos = 0;
+                        bonusBall.ypos = 0;
+                        bonusBall.isAlive = false;
+                        bonusBall.isMoving = false;
+                        bricks[RandInt(0,70)].hiddenBall = true;
                     }
                 }
             }
         }
     }
     public void moveThings() {
+        /*paddle.xpos = ball.xpos+ball.size/2-paddle.width/2;
+        paddle.refreshRectangle();*/
+        //automatic play
+
         if (ball.rectangle.intersects(paddle.rectangle) && !isCollidingwithpaddle && ball.ypos + Paddle.height / 2 - 1 + Ball.size / 2 <= paddle.ypos) {
             ball.dy = -ball.dy;
             isCollidingwithpaddle = true;
@@ -112,20 +154,38 @@ public class Main implements Runnable,KeyListener {
             isCollidingwithpaddle = false;
         }
         ball.move();
+        if(bonusBall.isMoving){
+            bonusBall.wrap();
+        }
         for(int x =0;x<=69;x++){
             if(ball.rectangle.intersects(bricks[x].rectangle)&&bricks[x].isAlive){
-                if(ball.ypos>=bricks[x].ypos+Brick.height-Math.abs(ball.dy)||ball.ypos+Ball.size-Math.abs(ball.dy)<=bricks[x].ypos){
+                if((ball.ypos>=bricks[x].ypos+Brick.height-Math.abs(ball.dy)||ball.ypos+Ball.size-Math.abs(ball.dy)<=bricks[x].ypos)&&!bricksIntersected){
                     ball.dy=-ball.dy;
                 }
-                if(ball.xpos>=bricks[x].xpos+Brick.width-Math.abs(ball.dx)||ball.xpos+Ball.size-Math.abs(ball.dx)<=bricks[x].xpos){
+                if((ball.xpos>=bricks[x].xpos+Brick.width-Math.abs(ball.dx)||ball.xpos+Ball.size-Math.abs(ball.dx)<=bricks[x].xpos)&&!bricksIntersected){
                     ball.dx=-ball.dx;
                 }
                 bricks[x].isAlive = false;
                 if(updateScore){
                     Score+=100;
                 }
+                bricksIntersected = true;
+                if(bricks[x].hiddenBall){
+                    bonusBall.xpos = bricks[x].xpos+Brick.width/2-Ball.size/2;
+                    bonusBall.ypos = bricks[x].ypos+Brick.height/2-Ball.size/2;
+                    bonusBall.row = (bonusBall.ypos-Brick.height/2+Ball.size/2-44)/56;
+                    bonusBall.isAlive = true;
+                    bonusBall.isMoving = true;
+                }
+            }
+            if (bonusBall.rectangle.intersects(bricks[x].rectangle)&&bricks[x].isAlive&& bonusBall.isAlive){
+                bricks[x].isAlive = false;
+                if(updateScore){
+                    Score+=100;
+                }
             }
         }
+        bricksIntersected = false;
         if (rightkeydown && leftkeydown) {
             //don't do anything if both keys are pressed
         } else if (rightkeydown) {
@@ -183,20 +243,21 @@ public class Main implements Runnable,KeyListener {
             BufferStrategy.show();
         } else {
             g.clearRect(0, 0, WIDTH, HEIGHT);
-            g.setColor(Color.BLACK);
-            g.fillRect(0, 0, WIDTH, HEIGHT);
+            g.drawImage(Sky,0,0,WIDTH,HEIGHT,null);
             g.setFont(font);
             g.setColor(Color.white);
             g.drawString("Score: " + Score, 0, 30);
             g.drawString("Lives: " + lives, 0, 60);
-            g.setColor(Color.WHITE);
-            g.fillRect(paddle.xpos, paddle.ypos, Paddle.width, Paddle.height);
-            g.fillOval(ball.xpos, ball.ypos, Ball.size, Ball.size);
+            g.drawImage(PaddleColor,paddle.xpos,paddle.ypos,Paddle.width,Paddle.height,null);
+            g.drawImage(Shovel,ball.xpos,ball.ypos,Ball.size,Ball.size,null);
             for (int x = 0; x <= 69; x++) {
                 if (bricks[x].isAlive) {
-                    g.fillRect(bricks[x].xpos, bricks[x].ypos, Brick.width, Brick.height);
+                    g.drawImage(Flowers,bricks[x].xpos,bricks[x].ypos,Brick.width,Brick.height,null);
                     bricks[x].refreshRectangle();
                 }
+            }
+            if (bonusBall.isAlive){
+                g.drawImage(LawnMower,bonusBall.xpos,bonusBall.ypos,ball.size,ball.size,null);
             }
             g.dispose();
             BufferStrategy.show();
@@ -205,16 +266,12 @@ public class Main implements Runnable,KeyListener {
     private void FirstRender(){
         Graphics2D g = (Graphics2D) BufferStrategy.getDrawGraphics();
         g.clearRect(0, 0, WIDTH, HEIGHT);
-        g.setColor(Color.BLACK);
-        g.fillRect(0,0,WIDTH,HEIGHT);
-        g.setColor(Color.WHITE);
-        g.fillRect(paddle.xpos,paddle.ypos,Paddle.width,Paddle.height);
-        g.fillOval(ball.xpos,ball.ypos, Ball.size, Ball.size);
+        g.drawImage(Sky,0,0,WIDTH,HEIGHT,null);
+        g.drawImage(PaddleColor,paddle.xpos,paddle.ypos,Paddle.width,Paddle.height,null);
+        g.drawImage(Shovel,ball.xpos,ball.ypos,Ball.size,Ball.size,null);
         for(int x =0; x<=69; x++){
-            if(bricks[x].isAlive) {
-                g.fillRect(bricks[x].xpos, bricks[x].ypos, Brick.width, Brick.height);
-                bricks[x].refreshRectangle();
-            }
+            g.drawImage(Flowers,bricks[x].xpos,bricks[x].ypos,Brick.width,Brick.height,null);
+            bricks[x].refreshRectangle();
         }
         g.dispose();
         BufferStrategy.show();

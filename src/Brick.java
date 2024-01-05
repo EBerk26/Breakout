@@ -6,6 +6,7 @@ public class Brick {
     public static int height = 50;
     boolean isAlive = true;
     Rectangle rectangle = new Rectangle(xpos,ypos,width,height);
+    boolean hiddenBall = false;
     public Brick(){
 
     }

@@ -7,10 +7,13 @@ public class Ball {
     public static int size =30;
     public Rectangle rectangle;
     boolean isMoving = true;
-    private void refreshRectangle(){
-        rectangle = new Rectangle(xpos,ypos,size,size);
+    boolean isAlive;
+    int row = 1;
+    public void refreshRectangle(){
+        rectangle = new Rectangle (xpos,ypos,size,size);
     }
     public Ball(int pxpos, int pypos){
+        isAlive = true;
         xpos = pxpos;
         ypos = pypos;
         dx = 1;
@@ -32,12 +35,16 @@ public class Ball {
             refreshRectangle();
         }
     }
-    public void bounce(String bouncedirection){
-        if (bouncedirection.equals("side collision")){
-            dx=-dx;
-        }
-        if (bouncedirection.equals("vertical collision")){
-            dy=-dy;
+    public void wrap(){
+        if(isMoving) {
+            xpos += dx;
+            if (xpos>= 1029){
+                xpos = -size;
+            }
+            if (xpos<= -size-1){
+                xpos = 1028;
+            }
+            refreshRectangle();
         }
     }
 }
