@@ -33,6 +33,7 @@ public class Main implements Runnable,KeyListener {
     }
     public boolean screenisflipped = false;
     public Image Shovel;
+    boolean killBall = false;
     public Image LawnMower;
     public Image Sky;
     public Image Flowers;
@@ -95,7 +96,7 @@ public class Main implements Runnable,KeyListener {
         /*if(Math.random()<=0.2){
             bricks[RandInt(0,70)].screenflip = true;
         }*/
-        bricks[65].screenflip = true;
+        //bricks[65].screenflip = true;
         //bricks[65].hiddenBall = true; //this code makes the hidden ball be in the first block
     }
     public void run(){
@@ -107,7 +108,12 @@ public class Main implements Runnable,KeyListener {
                 while (true) {
                     moveThings();
                     render();
-                    boolean killBall = rowCleared(bonusBall.row);
+                    if(!screenisflipped) {
+                        killBall = rowCleared(bonusBall.row);
+                    }
+                    if(screenisflipped){
+                        killBall = rowCleared(bonusBall.row);
+                    }
                     if(killBall){
                         bonusBall.isAlive = false;
                         bonusBall.isMoving = false;
@@ -122,28 +128,54 @@ public class Main implements Runnable,KeyListener {
                         }
                         ball.isMoving = true;
                     }
-                    if (Score == level * 7000) {
-                        level++;
-                        ball.isMoving = false;
-                        paddle.xpos = WIDTH/2-Paddle.width/2;
-                        ball.xpos = WIDTH / 2 - Ball.size / 2;
-                        ball.ypos = 600 - Ball.size;
-                        ball.refreshRectangle();
-                        StartTime = System.currentTimeMillis();
-                        ball.dy = -level; //this was a really weird interaction - it should be -level as the ball is going up buy for some reason this is backwards.
-                        ball.dx = level;
-                        for (int b = 0; b <= 69; b++) {
-                            bricks[b].isAlive = true;
-                            bricks[b].hiddenBall = false;
+                    if (Score >= level * 7000) {
+                        if(!screenisflipped) {
+                            level++;
+                            ball.isMoving = false;
+                            paddle.xpos = WIDTH / 2 - Paddle.width / 2;
+                            ball.xpos = WIDTH / 2 - Ball.size / 2;
+                            ball.ypos = 600 - Ball.size;
+                            ball.refreshRectangle();
+                            StartTime = System.currentTimeMillis();
+                            ball.dy = -level;
+                            ball.dx = level;
+                            for (int b = 0; b <= 69; b++) {
+                                bricks[b].isAlive = true;
+                                bricks[b].hiddenBall = false;
+                            }
+                            if (Math.random() <= 0.2 + level / 20) {
+                                bricks[RandInt(0, 70)].screenflip = true;
+                            }
+                            bonusBall.xpos = 0;
+                            bonusBall.ypos = 0;
+                            bonusBall.isAlive = false;
+                            bonusBall.isMoving = false;
+                            bricks[RandInt(0, 70)].hiddenBall = true;
                         }
-                        if(Math.random()<=0.2+level/20){
-                            bricks[RandInt(0,70)].screenflip = true;
+                        if(screenisflipped){
+                            level++;
+                            ball.isMoving = false;
+                            paddle.xpos = WIDTH / 2 - Paddle.width / 2;
+                            ball.xpos = WIDTH / 2 - Ball.size / 2;
+                            ball.ypos = 700-(600 - Ball.size);
+                            ball.refreshRectangle();
+                            StartTime = System.currentTimeMillis();
+                            ball.dy = level;
+                            ball.dx = level;
+                            for (int b = 0; b <= 69; b++) {
+                                bricks[b].isAlive = true;
+                                bricks[b].hiddenBall = false;
+                                bricks[b].screenflip = false;
+                            }
+                            if (Math.random() <= 0.2 + level / 20) {
+                                bricks[RandInt(0, 70)].screenflip = true;
+                            }
+                            bonusBall.xpos = 0;
+                            bonusBall.ypos = 0;
+                            bonusBall.isAlive = false;
+                            bonusBall.isMoving = false;
+                            bricks[RandInt(0, 70)].hiddenBall = true;
                         }
-                        bonusBall.xpos = 0;
-                        bonusBall.ypos = 0;
-                        bonusBall.isAlive = false;
-                        bonusBall.isMoving = false;
-                        bricks[RandInt(0,70)].hiddenBall = true;
                     }
                 }
             }
@@ -179,6 +211,7 @@ public class Main implements Runnable,KeyListener {
         }
         for(int x =0;x<=69;x++){
             if(ball.rectangle.intersects(bricks[x].rectangle)&&bricks[x].isAlive){
+                System.out.println(x);
                 if((ball.ypos>=bricks[x].ypos+Brick.height-Math.abs(ball.dy)||ball.ypos+Ball.size-Math.abs(ball.dy)<=bricks[x].ypos)&&!bricksIntersected){
                     ball.dy=-ball.dy;
                 }
@@ -193,7 +226,13 @@ public class Main implements Runnable,KeyListener {
                 if(bricks[x].hiddenBall){
                     bonusBall.xpos = bricks[x].xpos+Brick.width/2-Ball.size/2;
                     bonusBall.ypos = bricks[x].ypos+Brick.height/2-Ball.size/2;
-                    bonusBall.row = (bonusBall.ypos-Brick.height/2+Ball.size/2-44)/56;
+                    if(!screenisflipped) {
+                        bonusBall.row = (bonusBall.ypos - Brick.height / 2 + Ball.size / 2 - 44) / 56;
+                    }
+                    if(screenisflipped){
+                        bonusBall.row = 6-(((bricks[x].ypos+Brick.height/2)-350)/31+1);
+                        System.out.println("row: "+bonusBall.row);
+                    }
                     bonusBall.isAlive = true;
                     bonusBall.isMoving = true;
                 }
@@ -204,7 +243,7 @@ public class Main implements Runnable,KeyListener {
                     paddle.refreshRectangle();
                     paddle.dx = -3;
                     for(int a = 0; a<=69; a++){
-                        bricks[a].ypos = 700 - bricks[a].ypos;
+                        bricks[a].ypos = 700 - (bricks[a].ypos+Brick.height/2)-Brick.height/2;
                         bricks[a].refreshRectangle();
                     }
                     ball.ypos = 700-ball.ypos;
@@ -236,12 +275,23 @@ public class Main implements Runnable,KeyListener {
         } else if (leftkeydown) {
             paddle.moveleft();
         }
-        if (ball.ypos>=700-Ball.size) {
-            lives--;
-            ball.xpos = (int) (Math.random()*(WIDTH-Ball.size));
-            ball.ypos = 600-Ball.size;
-            ball.dy=-level;
-            StartTime = System.currentTimeMillis();
+        if(!screenisflipped){
+            if (ball.ypos>=700-Ball.size) {
+                lives--;
+                ball.xpos = (int) (Math.random() * (WIDTH - Ball.size));
+                ball.ypos = 600 - Ball.size;
+                ball.dy = -level;
+                StartTime = System.currentTimeMillis();
+            }
+        }
+        if(screenisflipped){
+            if(ball.ypos<=0){
+                lives--;
+                ball.xpos = (int) (Math.random()*(WIDTH-Ball.size));
+                ball.ypos = 700 - (600 - Ball.size);
+                ball.dy = level;
+                StartTime =System.currentTimeMillis();
+            }
         }
     }
     public void pause(int time){

@@ -18,7 +18,8 @@ public class Ball {
         ypos = pypos;
         dx = 1;
         dy =-1;
-        refreshRectangle();    }
+        refreshRectangle();
+    }
     public void move(){
         if(isMoving) {
             xpos += dx;
@@ -42,11 +43,11 @@ public class Ball {
             if (xpos + size >= 1028 || xpos <= 0) {
                 dx = -dx;
             }
-            if (ypos >= 700-size) {
-                dy = -dy;
-            }
             if (ypos <= 0) {
                 isMoving = false;
+            }
+            if (ypos >= 700-size) {
+                dy = -dy;
             }
             refreshRectangle();
         }
