@@ -21,6 +21,9 @@ public class Paddle {
         } else if(xpos>1028-dx-width){
             xpos=1028-width;
         }
+        if(xpos<0){
+            xpos = 0;
+        }
         refreshRectangle();
     }
     public void moveleft(){
@@ -28,6 +31,9 @@ public class Paddle {
             xpos -= dx;
         } else if(xpos<dx){
             xpos=0;
+        }
+        if(xpos>1028-width){
+            xpos = 1028-width;
         }
         refreshRectangle();
     }

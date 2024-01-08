@@ -7,6 +7,7 @@ public class Brick {
     boolean isAlive = true;
     Rectangle rectangle = new Rectangle(xpos,ypos,width,height);
     boolean hiddenBall = false;
+    boolean screenflip = false;
     public Brick(){
 
     }

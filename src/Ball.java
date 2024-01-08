@@ -35,6 +35,22 @@ public class Ball {
             refreshRectangle();
         }
     }
+    public void flippedmove(){
+        if(isMoving) {
+            xpos += dx;
+            ypos += dy;
+            if (xpos + size >= 1028 || xpos <= 0) {
+                dx = -dx;
+            }
+            if (ypos >= 700-size) {
+                dy = -dy;
+            }
+            if (ypos <= 0) {
+                isMoving = false;
+            }
+            refreshRectangle();
+        }
+    }
     public void wrap(){
         if(isMoving) {
             xpos += dx;

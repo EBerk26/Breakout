@@ -31,6 +31,7 @@ public class Main implements Runnable,KeyListener {
     public void keyTyped(KeyEvent e){
 
     }
+    public boolean screenisflipped = false;
     public Image Shovel;
     public Image LawnMower;
     public Image Sky;
@@ -38,7 +39,7 @@ public class Main implements Runnable,KeyListener {
     public Image PaddleColor;
     int lives = 10;
     int level = 1;
-    long StartTime =0;
+    long StartTime = 0;
     public int Score = 0;
     boolean updateScore = true;
     long StartTime2;
@@ -91,6 +92,10 @@ public class Main implements Runnable,KeyListener {
             }
         }
         bricks[RandInt(0,70)].hiddenBall = true;
+        /*if(Math.random()<=0.2){
+            bricks[RandInt(0,70)].screenflip = true;
+        }*/
+        bricks[65].screenflip = true;
         //bricks[65].hiddenBall = true; //this code makes the hidden ball be in the first block
     }
     public void run(){
@@ -131,6 +136,9 @@ public class Main implements Runnable,KeyListener {
                             bricks[b].isAlive = true;
                             bricks[b].hiddenBall = false;
                         }
+                        if(Math.random()<=0.2+level/20){
+                            bricks[RandInt(0,70)].screenflip = true;
+                        }
                         bonusBall.xpos = 0;
                         bonusBall.ypos = 0;
                         bonusBall.isAlive = false;
@@ -145,15 +153,27 @@ public class Main implements Runnable,KeyListener {
         /*paddle.xpos = ball.xpos+ball.size/2-paddle.width/2;
         paddle.refreshRectangle();*/
         //automatic play
-
-        if (ball.rectangle.intersects(paddle.rectangle) && !isCollidingwithpaddle && ball.ypos + Paddle.height / 2 - 1 + Ball.size / 2 <= paddle.ypos) {
-            ball.dy = -ball.dy;
-            isCollidingwithpaddle = true;
+        if(!screenisflipped) {
+            if (ball.rectangle.intersects(paddle.rectangle) && !isCollidingwithpaddle && ball.ypos + Paddle.height / 2 - 1 + Ball.size / 2 <= paddle.ypos) {
+                ball.dy = -ball.dy;
+                isCollidingwithpaddle = true;
+            }
+        }
+        if (screenisflipped){
+            if (ball.rectangle.intersects(paddle.rectangle) && !isCollidingwithpaddle && ball.ypos - Paddle.height / 2 + 1 >= paddle.ypos) {
+                ball.dy = -ball.dy;
+                isCollidingwithpaddle = true;
+            }
         }
         if (isCollidingwithpaddle && !ball.rectangle.intersects(paddle.rectangle)) {
             isCollidingwithpaddle = false;
         }
-        ball.move();
+        if(!screenisflipped){
+            ball.move();
+        }
+        if(screenisflipped){
+            ball.flippedmove();
+        }
         if(bonusBall.isMoving){
             bonusBall.wrap();
         }
@@ -175,6 +195,29 @@ public class Main implements Runnable,KeyListener {
                     bonusBall.ypos = bricks[x].ypos+Brick.height/2-Ball.size/2;
                     bonusBall.row = (bonusBall.ypos-Brick.height/2+Ball.size/2-44)/56;
                     bonusBall.isAlive = true;
+                    bonusBall.isMoving = true;
+                }
+                if(bricks[x].screenflip && !screenisflipped){
+                    ball.isMoving = false;
+                    bonusBall.isMoving = false;
+                    paddle.ypos = 700-paddle.ypos;
+                    paddle.refreshRectangle();
+                    paddle.dx = -3;
+                    for(int a = 0; a<=69; a++){
+                        bricks[a].ypos = 700 - bricks[a].ypos;
+                        bricks[a].refreshRectangle();
+                    }
+                    ball.ypos = 700-ball.ypos;
+                    ball.refreshRectangle();
+                    ball.dx = -ball.dx;
+                    ball.dy = -ball.dy;
+                    bonusBall.ypos = 700-bonusBall.ypos;
+                    bonusBall.refreshRectangle();
+                    bonusBall.dx = -bonusBall.dx;
+                    bonusBall.dy = -bonusBall.dy;
+                    screenisflipped = true;
+                    pause(1000);
+                    ball.isMoving = true;
                     bonusBall.isMoving = true;
                 }
             }
