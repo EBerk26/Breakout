@@ -41,7 +41,7 @@ public class Main implements Runnable,KeyListener {
     int lives = 10;
     int level = 1;
     long StartTime = 0;
-    public int Score = 0;
+    int Score = 0;
     boolean updateScore = true;
     long StartTime2;
     Brick[] bricks = new Brick[70];
@@ -93,9 +93,9 @@ public class Main implements Runnable,KeyListener {
             }
         }
         bricks[RandInt(0,70)].hiddenBall = true;
-        /*if(Math.random()<=0.2){
+        if(Math.random()<=0.2){
             bricks[RandInt(0,70)].screenflip = true;
-        }*/
+        }
         //bricks[65].screenflip = true;
         //bricks[65].hiddenBall = true; //this code makes the hidden ball be in the first block
     }
@@ -131,6 +131,9 @@ public class Main implements Runnable,KeyListener {
                     if (Score >= level * 7000) {
                         if(!screenisflipped) {
                             level++;
+                            if(level>=paddle.dx){
+                                paddle.dx = level +2;
+                            }
                             ball.isMoving = false;
                             paddle.xpos = WIDTH / 2 - Paddle.width / 2;
                             ball.xpos = WIDTH / 2 - Ball.size / 2;
@@ -143,7 +146,7 @@ public class Main implements Runnable,KeyListener {
                                 bricks[b].isAlive = true;
                                 bricks[b].hiddenBall = false;
                             }
-                            if (Math.random() <= 0.2 + level / 20) {
+                            if (Math.random() <= 0.2 + level / 20 && !screenisflipped) {
                                 bricks[RandInt(0, 70)].screenflip = true;
                             }
                             bonusBall.xpos = 0;
@@ -154,6 +157,9 @@ public class Main implements Runnable,KeyListener {
                         }
                         if(screenisflipped){
                             level++;
+                            if(level>=paddle.dx){
+                                paddle.dx = level +1;
+                            }
                             ball.isMoving = false;
                             paddle.xpos = WIDTH / 2 - Paddle.width / 2;
                             ball.xpos = WIDTH / 2 - Ball.size / 2;
@@ -211,7 +217,6 @@ public class Main implements Runnable,KeyListener {
         }
         for(int x =0;x<=69;x++){
             if(ball.rectangle.intersects(bricks[x].rectangle)&&bricks[x].isAlive){
-                System.out.println(x);
                 if((ball.ypos>=bricks[x].ypos+Brick.height-Math.abs(ball.dy)||ball.ypos+Ball.size-Math.abs(ball.dy)<=bricks[x].ypos)&&!bricksIntersected){
                     ball.dy=-ball.dy;
                 }
